@@ -1,0 +1,412 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Spark HA &amp; Yarn 配置 | 实训博客</title>
+    <meta name="author" content="214800111" />
+    <meta name="description" content="yuying" />
+    <meta name="keywords" content="" />
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+    <link rel="icon" href="/images/avatar.jpg" />
+    <link rel="preconnect" href="https://s4.zstatic.net" />
+<script src="https://s4.zstatic.net/ajax/libs/vue/3.3.7/vue.global.prod.min.js"></script>
+<link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.cn" />
+<link rel="preconnect" href="https://fonts.gstatic.cn" crossorigin />
+<link
+    rel="stylesheet"
+    href="https://fonts.googleapis.cn/css2?family=Fira+Code:wght@400;500;600;700&family=Lexend:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&display=swap"
+/>
+<script> const mixins = {}; </script>
+
+<script src="https://polyfill.alicdn.com/v3/polyfill.min.js?features=default"></script>
+
+
+<script src="https://s4.zstatic.net/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
+<link
+    rel="stylesheet"
+    href="https://s4.zstatic.net/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+/>
+<script src="/js/lib/highlight.js"></script>
+
+
+
+<script src="/js/lib/preview.js"></script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/main.css" />
+
+<meta name="generator" content="Hexo 7.2.0"></head>
+<body>
+    <div id="layout">
+        <transition name="fade">
+            <div id="loading" v-show="loading">
+                <div id="loading-circle">
+                    <h2>LOADING</h2>
+                    <p>加载过慢请开启缓存 浏览器默认开启</p>
+                    <img src="/images/loading.gif" />
+                </div>
+            </div>
+        </transition>
+        <div id="menu" :class="{ hidden: hiddenMenu, 'menu-color': menuColor}">
+    <nav id="desktop-menu">
+        <a class="title" href="/">
+            <span>实训博客</span>
+        </a>
+        
+        <a href="/">
+            <i class="fa-solid fa-house fa-fw"></i>
+            <span>&ensp;Home</span>
+        </a>
+        
+        <a href="/about">
+            <i class="fa-solid fa-id-card fa-fw"></i>
+            <span>&ensp;About</span>
+        </a>
+        
+        <a href="/archives">
+            <i class="fa-solid fa-box-archive fa-fw"></i>
+            <span>&ensp;Archives</span>
+        </a>
+        
+        <a href="/categories">
+            <i class="fa-solid fa-bookmark fa-fw"></i>
+            <span>&ensp;Categories</span>
+        </a>
+        
+        <a href="/tags">
+            <i class="fa-solid fa-tags fa-fw"></i>
+            <span>&ensp;Tags</span>
+        </a>
+        
+    </nav>
+    <nav id="mobile-menu">
+        <div class="title" @click="showMenuItems = !showMenuItems">
+            <i class="fa-solid fa-bars fa-fw"></i>
+            <span>&emsp;实训博客</span>
+        </div>
+        <transition name="slide">
+            <div class="items" v-show="showMenuItems">
+                
+                <a href="/">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-house fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Home</div>
+                    </div>
+                </a>
+                
+                <a href="/about">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-id-card fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">About</div>
+                    </div>
+                </a>
+                
+                <a href="/archives">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-box-archive fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Archives</div>
+                    </div>
+                </a>
+                
+                <a href="/categories">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-bookmark fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Categories</div>
+                    </div>
+                </a>
+                
+                <a href="/tags">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-tags fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Tags</div>
+                    </div>
+                </a>
+                
+            </div>
+        </transition>
+    </nav>
+</div>
+<transition name="fade">
+    <div id="menu-curtain" @click="showMenuItems = !showMenuItems" v-show="showMenuItems"></div>
+</transition>
+
+        <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
+            <div class="article">
+    <div>
+        <h1>Spark HA &amp; Yarn 配置</h1>
+    </div>
+    <div class="info">
+        <span class="date">
+            <span class="icon">
+                <i class="fa-solid fa-calendar fa-fw"></i>
+            </span>
+            2024/6/5
+        </span>
+        
+        
+        <span class="tags">
+            <span class="icon">
+                <i class="fa-solid fa-tags fa-fw"></i>
+            </span>
+            
+            
+            <span class="tag">
+                
+                <a href="/tags/spark/" style="color: #ffa2c4">
+                    spark
+                </a>
+            </span>
+            
+        </span>
+        
+    </div>
+    
+    <div class="content" v-pre>
+        <h1 id="一、Spark-StandAlone-HA-环境搭建"><a href="#一、Spark-StandAlone-HA-环境搭建" class="headerlink" title="一、Spark StandAlone HA 环境搭建"></a>一、Spark StandAlone HA 环境搭建</h1><h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><blockquote>
+<p>前提: 确保Zookeeper 和 HDFS 均已经启动</p>
+</blockquote>
+<p>先在<code>spark-env.sh</code>中, 删除: <code>SPARK_MASTER_HOST=node1</code></p>
+<p>原因: 配置文件中固定master是谁, 那么就无法用到zk的动态切换master功能了.</p>
+<p>在<code>spark-env.sh</code>中, 增加:</p>
+<pre><code>SPARK_DAEMON_JAVA_OPTS=&quot;-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=node1:2181,node2:2181,node3:2181 -Dspark.deploy.zookeeper.dir=/spark-ha&quot;
+# spark.deploy.recoveryMode 指定HA模式 基于Zookeeper实现
+# 指定Zookeeper的连接地址
+# 指定在Zookeeper中注册临时节点的路径
+</code></pre>
+<p>将spark-env.sh 分发到每一台服务器上</p>
+<pre><code>scp spark-env.sh node2:/export/server/spark/conf/
+scp spark-env.sh node3:/export/server/spark/conf/
+</code></pre>
+<p>停止当前StandAlone集群</p>
+<pre><code>sbin/stop-all.sh
+</code></pre>
+<p>启动集群:</p>
+<pre><code># 在node1上 启动一个master 和全部worker
+sbin/start-all.sh
+# 注意, 下面命令在node2上执行
+sbin/start-master.sh
+# 在node2上启动一个备用的master进程
+</code></pre>
+<p><img src="/../md%E5%9B%BE/spark.assets/14.jpg" alt="14.jpg"><br><img src="/../md%E5%9B%BE/spark.assets/15.jpg"></p>
+<h2 id="master主备切换"><a href="#master主备切换" class="headerlink" title="master主备切换"></a>master主备切换</h2><p>提交一个spark任务到当前<code>alive</code>master上:</p>
+<p>   bin&#x2F;spark-submit –master spark:&#x2F;&#x2F;node1:7077 &#x2F;export&#x2F;server&#x2F;spark&#x2F;examples&#x2F;src&#x2F;main&#x2F;python&#x2F;pi.py 1000</p>
+<p>在提交成功后, 将alivemaster直接kill掉</p>
+<p>不会影响程序运行:<br><img src="/../md%E5%9B%BE/spark.assets/16.jpg"><br>当新的master接收集群后, 程序继续运行, 正常得到结果.</p>
+<blockquote>
+<p>结论 HA模式下, 主备切换 不会影响到正在运行的程序.</p>
+<p>最大的影响是 会让它中断大约30秒左右.</p>
+</blockquote>
+<h1 id="二、Spark-On-YARN-环境搭建"><a href="#二、Spark-On-YARN-环境搭建" class="headerlink" title="二、Spark On YARN 环境搭建"></a>二、Spark On YARN 环境搭建</h1><h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>确保:</p>
+<ul>
+<li>HADOOP_CONF_DIR</li>
+<li>YARN_CONF_DIR</li>
+</ul>
+<p>在spark-env.sh 以及 环境变量配置文件中即可<br>​</p>
+<h2 id="连接到YARN中"><a href="#连接到YARN中" class="headerlink" title="连接到YARN中"></a>连接到YARN中</h2><h3 id="bin-pyspark"><a href="#bin-pyspark" class="headerlink" title="bin&#x2F;pyspark"></a>bin&#x2F;pyspark</h3><pre><code>bin/pyspark --master yarn --deploy-mode client|cluster
+# --deploy-mode 选项是指定部署模式, 默认是 客户端模式
+# client就是客户端模式
+# cluster就是集群模式
+# --deploy-mode 仅可以用在YARN模式下
+</code></pre>
+<blockquote>
+<p>注意: 交互式环境 pyspark  和 spark-shell  无法运行 cluster模式</p>
+</blockquote>
+<h3 id="bin-spark-shell"><a href="#bin-spark-shell" class="headerlink" title="bin&#x2F;spark-shell"></a>bin&#x2F;spark-shell</h3><pre><code>bin/spark-shell --master yarn --deploy-mode client|cluster
+</code></pre>
+<blockquote>
+<p>注意: 交互式环境 pyspark  和 spark-shell  无法运行 cluster模式</p>
+</blockquote>
+<h3 id="bin-spark-submit-PI"><a href="#bin-spark-submit-PI" class="headerlink" title="bin&#x2F;spark-submit (PI)"></a>bin&#x2F;spark-submit (PI)</h3><pre><code>bin/spark-submit --master yarn --deploy-mode client|cluster /xxx/xxx/xxx.py 参数
+</code></pre>
+<h2 id="spark-submit-和-spark-shell-和-pyspark的相关参数"><a href="#spark-submit-和-spark-shell-和-pyspark的相关参数" class="headerlink" title="spark-submit 和 spark-shell 和 pyspark的相关参数"></a>spark-submit 和 spark-shell 和 pyspark的相关参数</h2><p>参见: 附2<br>​</p>
+<h1 id="附1-Anaconda-On-Linux-安装-单台服务器"><a href="#附1-Anaconda-On-Linux-安装-单台服务器" class="headerlink" title="附1 Anaconda On Linux 安装 (单台服务器)"></a>附1 Anaconda On Linux 安装 (单台服务器)</h1><h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>上传安装包:</p>
+<p>上传: 资料中提供的<code>Anaconda3-2021.05-Linux-x86_64.sh</code>文件到Linux服务器上</p>
+<p>安装:</p>
+<p><code>sh ./Anaconda3-2021.05-Linux-x86_64.sh</code><br><img src="/../md%E5%9B%BE/spark.assets/17.jpg"><br><img src="/../md%E5%9B%BE/spark.assets/18.jpg"><br><img src="/../md%E5%9B%BE/spark.assets/19.jpg"><br><img src="/../md%E5%9B%BE/spark.assets/20.jpg"><br><img src="/../md%E5%9B%BE/spark.assets/21.jpg"><br>输入yes后就安装完成了.</p>
+<p>安装完成后, <code>退出finalshell 重新进来</code>:<br><img src="/../md%E5%9B%BE/spark.assets/22.jpg"></p>
+<p>看到这个Base开头表明安装好了.</p>
+<p>base是默认的虚拟环境.<br>​</p>
+<h2 id="国内源"><a href="#国内源" class="headerlink" title="国内源"></a>国内源</h2><p>如果你安装好后, 没有出现base, 可以打开:&#x2F;root&#x2F;.condarc这个文件, 追加如下内容:</p>
+<pre><code>channels:
+  - defaults
+show_channel_urls: true
+default_channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
+custom_channels:
+  conda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  msys2: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  bioconda: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  menpo: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+</code></pre>
+<h1 id="附2-spark-submit和pyspark相关参数"><a href="#附2-spark-submit和pyspark相关参数" class="headerlink" title="附2 spark-submit和pyspark相关参数"></a>附2 spark-submit和pyspark相关参数</h1><p>客户端工具我们可以用的有:</p>
+<ul>
+<li>bin&#x2F;pyspark: pyspark解释器spark环境</li>
+<li>bin&#x2F;spark-shell: scala解释器spark环境</li>
+<li>bin&#x2F;spark-submit: 提交jar包或Python文件执行的工具</li>
+<li>bin&#x2F;spark-sql: sparksql客户端工具</li>
+</ul>
+<p>这4个客户端工具的参数基本通用.</p>
+<p>以spark-submit 为例:</p>
+<p><code>bin/spark-submit --master spark://node1:7077 xxx.py</code></p>
+<pre><code>Usage: spark-submit [options] &lt;app jar | python file | R file&gt; [app arguments]
+Usage: spark-submit --kill [submission ID] --master [spark://...]
+Usage: spark-submit --status [submission ID] --master [spark://...]
+ Usage: spark-submit run-example [options] example-class [example args]
+
+Options:
+  --master MASTER_URL         spark://host:port, mesos://host:port, yarn,
+                          k8s://https://host:port, or local (Default: local[*]).
+  --deploy-mode DEPLOY_MODE   部署模式 client 或者 cluster 默认是client
+  --class CLASS_NAME          运行java或者scala class(for Java / Scala apps).
+  --name NAME                 程序的名字
+  --jars JARS                 Comma-separated list of jars to include on the driver
+                          and executor classpaths.
+  --packages                  Comma-separated list of maven coordinates of jars to include
+                          on the driver and executor classpaths. Will search the local
+                          maven repo, then maven central and any additional remote
+                          repositories given by --repositories. The format for the
+                          coordinates should be groupId:artifactId:version.
+  --exclude-packages          Comma-separated list of groupId:artifactId, to exclude while
+                          resolving the dependencies provided in --packages to avoid
+                          dependency conflicts.
+  --repositories              Comma-separated list of additional remote repositories to
+                          search for the maven coordinates given with --packages.
+  --py-files PY_FILES         指定Python程序依赖的其它python文件
+  --files FILES               Comma-separated list of files to be placed in the working
+                          directory of each executor. File paths of these files
+                          in executors can be accessed via SparkFiles.get(fileName).
+ --archives ARCHIVES         Comma-separated list of archives to be extracted into the
+                          working directory of each executor.
+
+ --conf, -c PROP=VALUE       手动指定配置
+ --properties-file FILE      Path to a file from which to load extra properties. If not
+                          specified, this will look for conf/spark-defaults.conf.
+
+ --driver-memory MEM         Driver的可用内存(Default: 1024M).
+ --driver-java-options       Driver的一些Java选项
+ --driver-library-path       Extra library path entries to pass to the driver.
+ --driver-class-path         Extra class path entries to pass to the driver. Note that
+                          jars added with --jars are automatically included in the
+                          classpath.
+
+  --executor-memory MEM       Executor的内存 (Default: 1G).
+
+ --proxy-user NAME           User to impersonate when submitting the application.
+                          This argument does not work with --principal / --keytab.
+
+  --help, -h                  显示帮助文件
+  --verbose, -v               Print additional debug output.
+ --version,                  打印版本
+
+Cluster deploy mode only(集群模式专属):
+ --driver-cores NUM          Driver可用的的CPU核数(Default: 1).
+
+Spark standalone or Mesos with cluster deploy mode only:
+ --supervise                 如果给定, 可以尝试重启Driver
+
+ Spark standalone, Mesos or K8s with cluster deploy mode only:
+ --kill SUBMISSION_ID        指定程序ID kill
+ --status SUBMISSION_ID      指定程序ID 查看运行状态
+
+ Spark standalone, Mesos and Kubernetes only:
+  --total-executor-cores NUM  整个任务可以给Executor多少个CPU核心用
+
+ Spark standalone, YARN and Kubernetes only:
+ --executor-cores NUM        单个Executor能使用多少CPU核心
+
+ Spark on YARN and Kubernetes only(YARN模式下):
+  --num-executors NUM         Executor应该开启几个
+  --principal PRINCIPAL       Principal to be used to login to KDC.
+ --keytab KEYTAB             The full path to the file that contains the keytab for the
+                          principal specified above.
+
+ Spark on YARN only:
+ --queue QUEUE_NAME          指定运行的YARN队列(Default: &quot;default&quot;).
+</code></pre>
+<h2 id="创建虚拟环境"><a href="#创建虚拟环境" class="headerlink" title="创建虚拟环境"></a>创建虚拟环境</h2><pre><code># 创建虚拟环境 pyspark, 基于Python 3.8
+conda activate base 
+conda create -n pyspark python=3.8
+
+# 切换到虚拟环境内
+conda activate pyspark
+
+# 在虚拟环境内安装包
+pip install pyhive pyspark jieba -i https://pypi.tuna.tsinghua.edu.cn/simple 
+
+pip install pyspark==3.2.0 -i https://pypi.tuna.tsinghua.edu.cn/simple
+</code></pre>
+
+    </div>
+    
+    
+    
+    
+    
+    
+    
+</div>
+
+            <footer id="footer">
+    <div id="footer-wrap">
+        <div>
+            &copy;
+            2022 - 2024 实训博客
+            <span id="footer-icon">
+                <i class="fa-solid fa-font-awesome fa-fw"></i>
+            </span>
+            &commat;214800111
+        </div>
+        <div>
+            Based on the <a target="_blank" rel="noopener" href="https://hexo.io">Hexo Engine</a> &amp;
+            <a target="_blank" rel="noopener" href="https://github.com/theme-particlex/hexo-theme-particlex">ParticleX Theme</a>
+        </div>
+        
+    </div>
+</footer>
+
+        </div>
+        
+        <transition name="fade">
+            <div id="preview" ref="preview" v-show="previewShow">
+                <img id="preview-content" ref="previewContent" />
+            </div>
+        </transition>
+        
+    </div>
+    <script src="/js/main.js"></script>
+    
+    
+
+
+
+
+    
+</body>
+</html>

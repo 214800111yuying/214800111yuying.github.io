@@ -3,8 +3,8 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>spark基础环境搭建 | 实训博客</title>
-    <meta name="author" content="John Doe" />
+    <title>spark基础环境配置 | 实训博客</title>
+    <meta name="author" content="214800111" />
     <meta name="description" content="yuying" />
     <meta name="keywords" content="" />
     <meta
@@ -156,7 +156,7 @@
         <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
             <div class="article">
     <div>
-        <h1>spark基础环境搭建</h1>
+        <h1>spark基础环境配置</h1>
     </div>
     <div class="info">
         <span class="date">
@@ -167,66 +167,211 @@
         </span>
         
         
+        <span class="tags">
+            <span class="icon">
+                <i class="fa-solid fa-tags fa-fw"></i>
+            </span>
+            
+            
+            <span class="tag">
+                
+                <a href="/tags/spark%E5%9F%BA%E7%A1%80%E7%8E%AF%E5%A2%83/" style="color: #00bcd4">
+                    spark基础环境
+                </a>
+            </span>
+            
+        </span>
+        
     </div>
     
     <div class="content" v-pre>
-        <p>Spark的历史服务器, 功能: 将Spark运行的程序的历史日志记录下来, 通过历史服务器方便用户查看程序运行的历史信息.</p>
-<p>搭建集群环境, 我们一般<code>推荐将历史服务器也配置上</code>, 方面以后查看历史记录<br>​</p>
-<h2 id="集群规划"><a href="#集群规划" class="headerlink" title="集群规划"></a>集群规划</h2><p>课程中 使用三台Linux虚拟机来组成集群环境, 非别是:</p>
-<p>node1\ node2\ node3</p>
-<p>node1运行: Spark的Master进程  和 1个Worker进程</p>
-<p>node2运行: spark的1个worker进程</p>
-<p>node3运行: spark的1个worker进程</p>
-<p>整个集群提供: 1个master进程 和 3个worker进程</p>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="在所有机器安装Python-Anaconda"><a href="#在所有机器安装Python-Anaconda" class="headerlink" title="在所有机器安装Python(Anaconda)"></a>在所有机器安装Python(Anaconda)</h3><p>参考 附1内容, 如何在Linux上安装anaconda</p>
-<p>同时不要忘记 都创建<code>pyspark</code>虚拟环境 以及安装虚拟环境所需要的包<code>pyspark jieba pyhive</code></p>
-<h3 id="在所有机器配置环境变量"><a href="#在所有机器配置环境变量" class="headerlink" title="在所有机器配置环境变量"></a>在所有机器配置环境变量</h3><p>参考 Local模式下 环境变量的配置内容</p>
-<p><code>确保3台都配置</code></p>
-<h3 id="配置配置文件"><a href="#配置配置文件" class="headerlink" title="配置配置文件"></a>配置配置文件</h3><p>进入到spark的配置文件目录中, <code>cd $SPARK_HOME/conf</code></p>
-<p>配置workers文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">改名, 去掉后面的.template后缀</span></span><br><span class="line">mv workers.template workers</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编辑worker文件</span></span><br><span class="line">vim workers</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">将里面的localhost删除, 追加</span></span><br><span class="line">node1</span><br><span class="line">node2</span><br><span class="line">node3</span><br><span class="line">到workers文件内</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">功能: 这个文件就是指示了  当前SparkStandAlone环境下, 有哪些worker</span></span><br></pre></td></tr></table></figure>
+        <h1 id="第一步-准备工作"><a href="#第一步-准备工作" class="headerlink" title="第一步 准备工作"></a><strong>第一步</strong> 准备工作</h1><p>安装前需要安装好jdk</p>
+<h3 id="1-上传"><a href="#1-上传" class="headerlink" title="1.上传"></a>1.上传</h3><p>上传 jdk-8u241-linux-x64.tar.gz 到&#x2F;export&#x2F;softwar&#x2F;目录下</p>
+<h3 id="2-node1"><a href="#2-node1" class="headerlink" title="2.node1"></a>2.node1</h3><pre><code>cd /export/softwar/
+tar zxvf jdk-8u241-linux-x64.tar.gz -C /export/server
+
+cd /export/server
+ln -s jdk1.8.0_241 jdk #添加软连接
+
+#配置环境变量
+vim /etc/profile
+
+#添加以下配置
+export JAVA_HOME=/export/server/jdk
+export PATH=$PATH:$JAVA_HOME/bin
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+</code></pre>
+<h3 id="3-将jdk，profile分发至node2，node3"><a href="#3-将jdk，profile分发至node2，node3" class="headerlink" title="3.将jdk，profile分发至node2，node3"></a>3.将jdk，profile分发至node2，node3</h3><pre><code>scp -r /export/server/jdk1.8.0_241/ root@node2:/export/server/
+scp -r /export/server/jdk1.8.0_241/ root@node3:/export/server/
+
+scp -r /etc/profile root@node2:/etc
+scp -r /etc/profile root@node3:/etc
+</code></pre>
+<h3 id="4-node2-node3上添加jdk软连接"><a href="#4-node2-node3上添加jdk软连接" class="headerlink" title="4.node2,node3上添加jdk软连接"></a>4.node2,node3上添加jdk软连接</h3><pre><code>cd /export/server
+ln -s jdk1.8.0_241 jdk #添加软连接
+ln -s jdk1.8.0_241 jdk #添加软连接
+</code></pre>
+<h3 id="5-node1-node2-node3重新加载环境变量文件"><a href="#5-node1-node2-node3重新加载环境变量文件" class="headerlink" title="5.node1,node2,node3重新加载环境变量文件"></a>5.node1,node2,node3重新加载环境变量文件</h3><pre><code>source /etc/profile
+</code></pre>
+<h3 id="6-node1-node2-node3检验jdk环境是否正常"><a href="#6-node1-node2-node3检验jdk环境是否正常" class="headerlink" title="6.node1,node2,node3检验jdk环境是否正常"></a>6.node1,node2,node3检验jdk环境是否正常</h3><pre><code>java -version
+</code></pre>
+<h1 id="二、Hadoop-3-3-0安装"><a href="#二、Hadoop-3-3-0安装" class="headerlink" title="二、Hadoop-3.3.0安装"></a>二、Hadoop-3.3.0安装</h1><h3 id="1-上传-1"><a href="#1-上传-1" class="headerlink" title="1.上传"></a>1.上传</h3><p>上传 hadoop-3.3.0-Centos7-64-with-snappy.tar.gz到&#x2F;export&#x2F;softwar&#x2F;目录下</p>
+<h3 id="2-node1-1"><a href="#2-node1-1" class="headerlink" title="2.node1"></a>2.node1</h3><pre><code>cd /export/softwar/
+tar zxvf hadoop-3.3.0-Centos7-64-with-snappy.tar.gz -C /export/server
+
+cd /export/server
+ln -s hadoop-3.3.0 hadoop #添加软连接
+</code></pre>
+<h3 id="3-hadoop配置"><a href="#3-hadoop配置" class="headerlink" title="3.hadoop配置"></a>3.hadoop配置</h3><h4 id="1-hadoop-env-sh"><a href="#1-hadoop-env-sh" class="headerlink" title="(1)hadoop-env.sh"></a>(1)hadoop-env.sh</h4><pre><code>#文件最后添加
+export JAVA_HOME=/export/server/jdk
+export HDFS_NAMENODE_USER=root
+export HDFS_DATANODE_USER=root
+export HDFS_SECONDARYNAMENODE_USER=root
+export YARN_RESOURCEMANAGER_USER=root
+export YARN_NODEMANAGER_USER=root
+</code></pre>
+<h4 id="2-core-site-xml"><a href="#2-core-site-xml" class="headerlink" title="(2)core-site.xml"></a>(2)core-site.xml</h4><pre><code>    #在&lt;configration&gt;标签内加入配置
+      &lt;!-- 设置默认使用的文件系统 Hadoop支持file、HDFS、GFS、ali|Amazon云等文件系统 --&gt;
+    &lt;property&gt;
+        &lt;name&gt;fs.defaultFS&lt;/name&gt;
+        &lt;value&gt;hdfs://node1:8020&lt;/value&gt;
+    &lt;/property&gt;
+
+    &lt;!-- 设置Hadoop本地保存数据路径 --&gt;
+    &lt;property&gt;
+        &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
+        &lt;value&gt;/export/data/hadoop-3.3.0&lt;/value&gt;
+    &lt;/property&gt;
+
+    &lt;!-- 设置HDFS web UI用户身份 --&gt;
+    &lt;property&gt;
+        &lt;name&gt;hadoop.http.staticuser.user&lt;/name&gt;
+        &lt;value&gt;root&lt;/value&gt;
+    &lt;/property&gt;
+
+    &lt;!-- 整合hive 用户代理
+</code></pre>
+<h1 id="三、zookeeper安装"><a href="#三、zookeeper安装" class="headerlink" title="三、zookeeper安装"></a>三、zookeeper安装</h1><h3 id="第一步-解压"><a href="#第一步-解压" class="headerlink" title="第一步 解压"></a><strong>第一步</strong> 解压</h3><p>在node1主机上，解压zookeeper的压缩包到&#x2F;export&#x2F;server路径下去，然后准备进行安装</p>
+<pre><code>cd /export/software
+tar -zxvf zookeeper.tar.gz -C /export/server/
+cd /export/server/
+ln -s zookeeper/ zookeeper
+</code></pre>
+<h3 id="第二步-环境变量"><a href="#第二步-环境变量" class="headerlink" title="第二步 环境变量"></a><strong>第二步</strong> 环境变量</h3><p>#修改环境变量（注意：3台zookeeper都需要修改）</p>
+<pre><code>vi /etc/profile
+export ZOOKEEPER_HOME=/export/server/zookeeper
+export PATH=$PATH:$ZOOKEEPER_HOME/bin
+source /etc/profile
+</code></pre>
+<h3 id="第三步-配置文件"><a href="#第三步-配置文件" class="headerlink" title="第三步 配置文件"></a><strong>第三步</strong> 配置文件</h3><p>#修改Zookeeper配置文件</p>
+<pre><code>cd /export/server/zookeeper/conf/
+cp zoo_sample.cfg zoo.cfg
+mkdir -p /export/data/zookeeper/zkdatas/
+vim zoo.cfg
+</code></pre>
+<p>#修改以下内容<br>#Zookeeper的数据存放目录</p>
+<pre><code>dataDir = /export/data/zookeeper/zkdatas/
+</code></pre>
+<p>#保留多少个快照</p>
+<pre><code>autopurge.snapRetainCount = 3
+</code></pre>
+<p>#日志多少小时清理一次</p>
+<pre><code>autopurge.purgeInterval = 1
+</code></pre>
+<p>#集群中服务器地址</p>
+<pre><code>server.1 = node1:2888:3888
+server.2 = node2:2888:3888
+server.3 = node3:2888:3888
+</code></pre>
+<h3 id="第四步-添加myid配置"><a href="#第四步-添加myid配置" class="headerlink" title="第四步 添加myid配置"></a><strong>第四步</strong> 添加myid配置</h3><p>在node1主机的这个路径下创建一个文件，文件名为myid ,文件内容为1</p>
+<pre><code>echo 1 &gt; /export/data/zookeeper/zkdatas/myid 
+</code></pre>
+<h3 id="第五步-安装包分发并修改myid的值"><a href="#第五步-安装包分发并修改myid的值" class="headerlink" title="第五步 安装包分发并修改myid的值"></a><strong>第五步</strong> 安装包分发并修改myid的值</h3><p>在node1主机上，将安装包分发到其他机器</p>
+<p>第一台机器上面执行以下两个命令</p>
+<pre><code>cd /export/server/
+scp -r /export/server/zookeeper-3.4.6/ root@node2:/export/server/
+
+scp -r /export/server/zookeeper-3.4.6/ root@node3:/export/server/
+</code></pre>
+<p>第二台机器上建立软连接, 并修改myid的值为2</p>
+<pre><code>cd /export/server/
+
+ln -s zookeeper-3.4.6/ zookeeper
+
+echo 2 &gt; /export/data/zookeeper/zkdatas/myid
+</code></pre>
+<p>第三台机器上建立软连接, 并修改myid的值为3</p>
+<pre><code>cd /export/server/
+
+ln -s zookeeper-3.4.6/ zookeeper
+
+echo 3 &gt; /export/data/zookeeper/zkdatas/myid
+</code></pre>
+<h3 id="第六步-三台机器启动zookeeper服务"><a href="#第六步-三台机器启动zookeeper服务" class="headerlink" title="第六步 三台机器启动zookeeper服务"></a><strong>第六步</strong> 三台机器启动zookeeper服务</h3><p>三台机器分别启动zookeeper服务</p>
+<p>这个命令三台机器都要执行</p>
+<pre><code>/export/server/zookeeper/bin/zkServer.sh start
+</code></pre>
+<p>三台主机分别查看启动状态</p>
+<pre><code>/export/server/zookeeper/bin/zkServer.sh status
+</code></pre>
+<h5 id="启动（每台机器）"><a href="#启动（每台机器）" class="headerlink" title="启动（每台机器）"></a>启动（每台机器）</h5><p>zkServer.sh start<br>或者编写一个脚本来批量启动所有机器：</p>
+<p>方法1：</p>
+<pre><code>for host in &quot;node1 node2 node3&quot;
+do
+ssh $host &quot;source/etc/profile;/export/server/zookeeper/bin/zkServer.sh start&quot;
+done
+</code></pre>
+<p>方法2：</p>
+<p>1.创建&#x2F;export&#x2F;shell目录</p>
+<pre><code>mkdir /export/shell
+</code></pre>
+<p>2.编辑创建zk.sh</p>
+<pre><code>vim zkall.sh
+</code></pre>
+<p>3.写shell脚本</p>
+<pre><code>#!/bin/bash
+
+case $1 in
+&quot;start&quot;)&#123;
+for i in node1 node2 node3
+do
+    echo ---------- zookeeper $i 启动 ------------
+    ssh $i &quot;/export/server/zookeeper/bin/zkServer.sh start&quot;
+done
+&#125;;;
+&quot;stop&quot;)&#123;
+for i in node1 node2 node3
+do
+    echo ---------- zookeeper $i 停止 ------------ 
+    ssh $i &quot;/export/server/zookeeper/bin/zkServer.sh stop&quot;
+done
+&#125;;;
+&quot;status&quot;)&#123;
+for i in node1 node2 node3
+do
+    echo ---------- zookeeper $i 状态 ------------ 
+    ssh $i &quot;/export/server/zookeeper/bin/zkServer.sh status&quot;
+done
+&#125;;;
+esac
+</code></pre>
+<p>4.配置zk脚本环境变量</p>
+<pre><code>#SHELL_HOME
+export SHELL_HOME=/export/shell/
+export PATH=$PATH:$SHELL_HOME
+</code></pre>
+<p>6.让环境变量生效</p>
+<pre><code>source /etc/profile
+</code></pre>
+<p>7.启动测试</p>
+<pre><code>chmod 777 /export/shell/zkall.sh
+zkall.sh start
 
 
-<p>配置spark-env.sh文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">1. 改名</span></span><br><span class="line">mv spark-env.sh.template spark-env.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">2. 编辑spark-env.sh, 在底部追加如下内容</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 设置JAVA安装目录</span></span></span><br><span class="line">JAVA_HOME=/export/server/jdk</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># HADOOP软件配置文件目录，读取HDFS上文件和运行YARN集群</span></span></span><br><span class="line">HADOOP_CONF_DIR=/export/server/hadoop/etc/hadoop</span><br><span class="line">YARN_CONF_DIR=/export/server/hadoop/etc/hadoop</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 指定spark老大Master的IP和提交任务的通信端口</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">告知Spark的master运行在哪个机器上</span></span><br><span class="line">export SPARK_MASTER_HOST=node1</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">告知sparkmaster的通讯端口</span></span><br><span class="line">export SPARK_MASTER_PORT=7077</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">告知spark master的 webui端口</span></span><br><span class="line">SPARK_MASTER_WEBUI_PORT=8080</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">worker cpu可用核数</span></span><br><span class="line">SPARK_WORKER_CORES=1</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">worker可用内存</span></span><br><span class="line">SPARK_WORKER_MEMORY=1g</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">worker的工作通讯地址</span></span><br><span class="line">SPARK_WORKER_PORT=7078</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">worker的 webui地址</span></span><br><span class="line">SPARK_WORKER_WEBUI_PORT=8081</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 设置历史服务器</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">配置的意思是  将spark程序运行的历史日志 存到hdfs的/sparklog文件夹中</span></span><br><span class="line">SPARK_HISTORY_OPTS=&quot;-Dspark.history.fs.logDirectory=hdfs://node1:8020/sparklog/ -Dspark.history.fs.cleaner.enabled=true&quot;</span><br></pre></td></tr></table></figure>
-
-
-<p>注意, 上面的配置的路径 要根据你自己机器实际的路径来写</p>
-<p>在HDFS上创建程序运行历史记录存放的文件夹:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hadoop fs -mkdir /sparklog</span><br><span class="line">hadoop fs -chmod 777 /sparklog</span><br></pre></td></tr></table></figure>
-
-
-<p>配置spark-defaults.conf文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">1. 改名</span></span><br><span class="line">mv spark-defaults.conf.template spark-defaults.conf</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">2. 修改内容, 追加如下内容</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">开启spark的日期记录功能</span></span><br><span class="line">spark.eventLog.enabled 	true</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置spark日志记录的路径</span></span><br><span class="line">spark.eventLog.dir	 hdfs://node1:8020/sparklog/ </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置spark日志是否启动压缩</span></span><br><span class="line">spark.eventLog.compress 	true</span><br></pre></td></tr></table></figure>
-
-
-<p>配置log4j.properties 文件 [可选配置]</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">1. 改名</span></span><br><span class="line">mv log4j.properties.template log4j.properties</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">2. 修改内容 参考下图</span></span><br></pre></td></tr></table></figure>
-
-<p><img src="F:/spark课/md图/spark.assets/10.jpg"></p>
-<blockquote>
-<p>这个文件的修改不是必须的,  为什么修改为WARN. 因为Spark是个话痨</p>
-<p>会疯狂输出日志, 设置级别为WARN 只输出警告和错误日志, 不要输出一堆废话.</p>
-</blockquote>
-<h3 id="将Spark安装文件夹-分发到其它的服务器上"><a href="#将Spark安装文件夹-分发到其它的服务器上" class="headerlink" title="将Spark安装文件夹  分发到其它的服务器上"></a>将Spark安装文件夹  分发到其它的服务器上</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scp -r spark-3.1.2-bin-hadoop3.2 root@node2:/export/server/</span><br><span class="line">scp -r spark-3.1.2-bin-hadoop3.2 root@node3:/export/server/</span><br></pre></td></tr></table></figure>
-
-
-<p>不要忘记, 在node2和node3上 给spark安装目录增加软链接</p>
-<p><code>ln -s /export/server/spark-3.2.0-bin-hadoop3.2 /export/server/spark</code></p>
-<h3 id="检查"><a href="#检查" class="headerlink" title="检查"></a>检查</h3><p>检查每台机器的:</p>
-<p>JAVA_HOME</p>
-<p>SPARK_HOME</p>
-<p>PYSPARK_PYTHON</p>
-<p>等等 环境变量是否正常指向正确的目录</p>
-<h3 id="启动历史服务器"><a href="#启动历史服务器" class="headerlink" title="启动历史服务器"></a>启动历史服务器</h3><p><code>sbin/start-history-server.sh</code></p>
-<h3 id="启动Spark的Master和Worker进程"><a href="#启动Spark的Master和Worker进程" class="headerlink" title="启动Spark的Master和Worker进程"></a>启动Spark的Master和Worker进程</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动全部master和worker</span></span><br><span class="line">sbin/start-all.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">或者可以一个个启动:</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动当前机器的master</span></span><br><span class="line">sbin/start-master.sh</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动当前机器的worker</span></span><br><span class="line">sbin/start-worker.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">停止全部</span></span><br><span class="line">sbin/stop-all.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">停止当前机器的master</span></span><br><span class="line">sbin/stop-master.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">停止当前机器的worker</span></span><br><span class="line">sbin/stop-worker.sh</span><br></pre></td></tr></table></figure>
-
-
-<h3 id="查看Master的WEB-UI"><a href="#查看Master的WEB-UI" class="headerlink" title="查看Master的WEB UI"></a>查看Master的WEB UI</h3><p>默认端口master我们设置到了8080</p>
-<p>如果端口被占用, 会顺延到8081 …;8082… 8083… 直到申请到端口为止</p>
-<p>可以在日志中查看, 具体顺延到哪个端口上:</p>
-<p><code>Service &#39;MasterUI&#39; could not bind on port 8080. Attempting port 8081.</code><br>​</p>
-<p><img src="F:/spark课/md图/spark.assets/11.jpg"></p>
+export JAVA_HOME=/export/server/jdk
+export PATH=$PATH:$JAVA_HOME/bin
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+</code></pre>
 
     </div>
     
@@ -246,7 +391,7 @@
             <span id="footer-icon">
                 <i class="fa-solid fa-font-awesome fa-fw"></i>
             </span>
-            &commat;John Doe
+            &commat;214800111
         </div>
         <div>
             Based on the <a target="_blank" rel="noopener" href="https://hexo.io">Hexo Engine</a> &amp;
